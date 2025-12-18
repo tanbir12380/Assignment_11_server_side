@@ -263,6 +263,37 @@ async function run() {
       res.send(values);
     });
 
+    app.get("/clubs", async (req, res) => {
+      try {
+        const { search, category, sortBy } = req.query;
+
+        let filter = { status: "approved" };
+
+        if (search) {
+          filter.clubName = { $regex: search, $options: "i" };
+        }
+
+        if (category) {
+          filter.category = category;
+        }
+
+        let cursor = Collection3.find(filter);
+
+        if (sortBy) {
+          if (sortBy === "new") cursor = cursor.sort({ createdAt: -1 });
+          if (sortBy === "old") cursor = cursor.sort({ createdAt: 1 });
+          if (sortBy === "high") cursor = cursor.sort({ membershipFee: -1 });
+          if (sortBy === "low") cursor = cursor.sort({ membershipFee: 1 });
+        }
+
+        const values = await cursor.toArray();
+        res.send(values);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "Something went wrong" });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
