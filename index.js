@@ -183,6 +183,36 @@ async function run() {
       }
     });
 
+    app.patch("/clubs/:id", privatePath, async (req, res) => {
+      try {
+        const { email } = req.userInfoSet;
+        console.log(email);
+
+        const result1 = await Collection1.findOne({ email: email });
+        const role = result1.role;
+        console.log(role);
+
+        if (role != "clubManager") {
+          return res.status(403).json({ message: "forbidden" });
+        } else {
+          console.log("club Manager detected10");
+        }
+
+        const clubId = req.params.id;
+        const updateData = req.body;
+
+        const result = await Collection3.updateOne(
+          { _id: new ObjectId(clubId) },
+          { $set: updateData }
+        );
+
+        res.json({ message: "Club updated successfully", result });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
