@@ -1,51 +1,100 @@
-const express = require('express')
-const app = express()
-const port = process.env.PORT || 3000
+const express = require("express");
+const app = express();
+const port = process.env.PORT || 3000;
 const cors = require("cors");
 app.use(cors());
 
 app.use(express.json());
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+
+// middleware
+
+const admin = require("firebase-admin");
+const serviceAccount = require("./private-key.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const privatePath = async (req, res, next) => {
+  const token = req.headers.accesstoken;
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized access" });
+  }
+
+  try {
+    const userInfo = await admin.auth().verifyIdToken(token);
+    req.userInfoSet = userInfo;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};
+
+const privatePathSpecificUser = async (req, res, next) => {
+  const token = req.headers.accesstoken;
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized access" });
+  }
+
+  try {
+    const userInfo = await admin.auth().verifyIdToken(token);
+
+    if (req.params.email !== userInfo.email) {
+      return res.status(403).json({ message: "Forbidden" });
+    } else {
+      req.user = userInfo;
+      console.log("user matched, door is open3401");
+      console.log("welcome you are", userInfo.name);
+      next();
+    }
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};
+
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+
+const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 const uri = process.env.MONGODB_URI;
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});
 
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 async function run() {
   try {
-
-
-        const userDB = client.db("ClubSphere");
+    const userDB = client.db("ClubSphere");
     const Collection1 = userDB.collection("user");
     const Collection2 = userDB.collection("admin");
     const Collection3 = userDB.collection("clubs");
+    const Collection4 = userDB.collection("events");
+    const Collection5 = userDB.collection("membership");
 
-
-      app.post("/user", async (req, res) => {
+    app.post("/user", async (req, res) => {
       const ourData = req.body;
       const result = await Collection1.insertOne(ourData);
       res.send(result);
     });
 
-
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
-
   }
 }
 run().catch(console.dir);
