@@ -168,6 +168,21 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/clubCategories", async (req, res) => {
+      try {
+        const clubs = await Collection3.find({ status: "approved" }).toArray();
+
+        const categories = clubs.map((club) => club.category);
+
+        const uniqueCategories = [...new Set(categories)];
+
+        res.json(uniqueCategories);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
