@@ -85,9 +85,25 @@ async function run() {
     const Collection5 = userDB.collection("membership");
 
     app.post("/user", async (req, res) => {
-      const ourData = req.body;
-      const result = await Collection1.insertOne(ourData);
-      res.send(result);
+      try {
+        const userData = req.body;
+
+        const existingUser = await Collection1.findOne({
+          email: userData.email,
+        });
+
+        if (existingUser) {
+          return res.send({ message: "User already exists" });
+        } else {
+          const result = await Collection1.insertOne(newUser);
+          res.send({
+            message: "User created successfully",
+            result,
+          });
+        }
+      } catch (error) {
+        res.status(500).send({ message: "Internal server error" });
+      }
     });
 
     app.get("/users", privatePath, async (req, res) => {
