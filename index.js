@@ -294,6 +294,36 @@ async function run() {
       }
     });
 
+    app.patch("/events/:id", privatePath, async (req, res) => {
+      try {
+        const { email } = req.userInfoSet;
+        console.log(email);
+
+        const result1 = await Collection1.findOne({ email: email });
+        const role = result1.role;
+        console.log(role);
+
+        if (role != "clubManager") {
+          return res.status(403).json({ message: "forbidden" });
+        } else {
+          console.log("club Manager detected10");
+        }
+
+        const eventId = req.params.id;
+        const updateData = req.body;
+
+        const result = await Collection4.updateOne(
+          { _id: new ObjectId(eventId) },
+          { $set: updateData }
+        );
+
+        res.json({ message: "event updated successfully", result });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
