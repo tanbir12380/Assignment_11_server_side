@@ -213,6 +213,36 @@ async function run() {
       }
     });
 
+    app.post("/events", privatePath, async (req, res) => {
+      const { email } = req.userInfoSet;
+      console.log(email);
+
+      const result1 = await Collection1.findOne({ email: email });
+      const role = result1.role;
+      console.log(role);
+
+      if (role != "clubManager") {
+        return res.status(403).json({ message: "forbidden" });
+      } else {
+        console.log("club Manager detected8");
+      }
+
+      const ourData = req.body;
+      const clubId = ourData.clubId;
+
+      const clubQuery = { _id: new ObjectId(clubId) };
+      const club = await Collection3.findOne(clubQuery);
+
+      const updatedData = {
+        eventCount: (club.eventCount || 0) + 1,
+      };
+
+      await Collection3.updateOne(clubQuery, { $set: updatedData });
+
+      const result = await Collection4.insertOne(ourData);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
