@@ -324,6 +324,34 @@ async function run() {
       }
     });
 
+    app.delete("/events/:id", privatePath, async (req, res) => {
+      try {
+        const { email } = req.userInfoSet;
+        console.log(email);
+
+        const result1 = await Collection1.findOne({ email: email });
+        const role = result1.role;
+        console.log(role);
+
+        if (role != "clubManager") {
+          return res.status(403).json({ message: "forbidden" });
+        } else {
+          console.log("club Manager detected10");
+        }
+
+        const eventId = req.params.id;
+
+        const result = await Collection4.deleteOne({
+          _id: new ObjectId(eventId),
+        });
+
+        res.json({ message: "event deleted successfully", result });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
