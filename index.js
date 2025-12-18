@@ -117,6 +117,38 @@ async function run() {
       res.send(value);
     });
 
+    app.patch("/users/:id", privatePath, async (req, res) => {
+      const { email } = req.userInfoSet;
+      console.log(email);
+
+      const result1 = await Collection1.findOne({ email: email });
+      const role = result1.role;
+      console.log(role);
+
+      if (role != "admin") {
+        return res.status(403).json({ message: "forbidden" });
+      } else {
+        console.log("admin detected2");
+      }
+
+      const id = req.params.id;
+
+      const ourUser = req.body;
+
+      const query = { _id: new ObjectId(id) };
+
+      const updatedData1 = {
+        $set: {
+          role: ourUser.role,
+        },
+      };
+
+      const options = {};
+
+      const result = await Collection1.updateOne(query, updatedData1, options);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
