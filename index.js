@@ -243,6 +243,26 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/events", async (req, res) => {
+      const { search, sortBy } = req.query;
+
+      let filter = {};
+
+      if (search) {
+        filter.title = { $regex: search, $options: "i" };
+      }
+
+      let cursor = Collection4.find(filter);
+
+      if (sortBy === "new") cursor = cursor.sort({ eventDate: -1 });
+      if (sortBy === "old") cursor = cursor.sort({ eventDate: 1 });
+      if (sortBy === "high") cursor = cursor.sort({ eventFee: -1 });
+      if (sortBy === "low") cursor = cursor.sort({ eventFee: 1 });
+
+      const values = await cursor.toArray();
+      res.send(values);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
