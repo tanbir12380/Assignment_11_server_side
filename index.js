@@ -90,6 +90,25 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/users", privatePath, async (req, res) => {
+      const { email } = req.userInfoSet;
+      console.log(email);
+
+      const result1 = await Collection1.findOne({ email: email });
+      const role = result1.role;
+      console.log(role);
+
+      if (role != "admin") {
+        return res.status(403).json({ message: "forbidden" });
+      } else {
+        console.log("admin detected1");
+      }
+
+      const cursor = await Collection1.find({});
+      const values = await cursor.toArray();
+      res.send(values);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
