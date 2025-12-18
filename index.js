@@ -8,7 +8,13 @@ app.use(express.json());
 require("dotenv").config();
 
 const admin = require("firebase-admin");
-const serviceAccount = require("./private-key.json");
+// const serviceAccount = require("./private-key.json");
+
+const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString(
+  "utf8"
+);
+const serviceAccount = JSON.parse(decoded);
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -43,8 +49,6 @@ const privatePathSpecificUser = async (req, res, next) => {
       return res.status(403).json({ message: "Forbidden" });
     } else {
       req.user = userInfo;
-      console.log("user matched, door is open3401");
-      console.log("welcome you are", userInfo.name);
       next();
     }
   } catch (error) {
@@ -62,9 +66,7 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+app.listen(port, () => {});
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -90,16 +92,13 @@ async function run() {
 
     app.get("/users", privatePath, async (req, res) => {
       const { email } = req.userInfoSet;
-      console.log(email);
 
       const result1 = await Collection1.findOne({ email: email });
       const role = result1.role;
-      console.log(role);
 
       if (role != "admin") {
         return res.status(403).json({ message: "forbidden" });
       } else {
-        console.log("admin detected1");
       }
 
       const cursor = await Collection1.find({});
@@ -117,16 +116,12 @@ async function run() {
 
     app.patch("/users/:id", privatePath, async (req, res) => {
       const { email } = req.userInfoSet;
-      console.log(email);
 
       const result1 = await Collection1.findOne({ email: email });
       const role = result1.role;
-      console.log(role);
 
       if (role != "admin") {
         return res.status(403).json({ message: "forbidden" });
-      } else {
-        console.log("admin detected2");
       }
 
       const id = req.params.id;
@@ -149,16 +144,12 @@ async function run() {
 
     app.post("/clubs", privatePath, async (req, res) => {
       const { email } = req.userInfoSet;
-      console.log(email);
 
       const result1 = await Collection1.findOne({ email: email });
       const role = result1.role;
-      console.log(role);
 
       if (role != "clubManager") {
         return res.status(403).json({ message: "forbidden" });
-      } else {
-        console.log("club Manager detected3");
       }
 
       const ourData = req.body;
@@ -176,7 +167,6 @@ async function run() {
 
         res.json(uniqueCategories);
       } catch (error) {
-        console.error(error);
         res.status(500).json({ message: "Server error" });
       }
     });
@@ -184,16 +174,12 @@ async function run() {
     app.patch("/clubs/:id", privatePath, async (req, res) => {
       try {
         const { email } = req.userInfoSet;
-        console.log(email);
 
         const result1 = await Collection1.findOne({ email: email });
         const role = result1.role;
-        console.log(role);
 
         if (role != "clubManager") {
           return res.status(403).json({ message: "forbidden" });
-        } else {
-          console.log("club Manager detected10");
         }
 
         const clubId = req.params.id;
@@ -206,23 +192,18 @@ async function run() {
 
         res.json({ message: "Club updated successfully", result });
       } catch (error) {
-        console.error(error);
         res.status(500).json({ message: "Server error" });
       }
     });
 
     app.post("/events", privatePath, async (req, res) => {
       const { email } = req.userInfoSet;
-      console.log(email);
 
       const result1 = await Collection1.findOne({ email: email });
       const role = result1.role;
-      console.log(role);
 
       if (role != "clubManager") {
         return res.status(403).json({ message: "forbidden" });
-      } else {
-        console.log("club Manager detected8");
       }
 
       const ourData = req.body;
@@ -287,7 +268,6 @@ async function run() {
         const values = await cursor.toArray();
         res.send(values);
       } catch (err) {
-        console.error(err);
         res.status(500).send({ message: "Something went wrong" });
       }
     });
@@ -295,16 +275,12 @@ async function run() {
     app.patch("/events/:id", privatePath, async (req, res) => {
       try {
         const { email } = req.userInfoSet;
-        console.log(email);
 
         const result1 = await Collection1.findOne({ email: email });
         const role = result1.role;
-        console.log(role);
 
         if (role != "clubManager") {
           return res.status(403).json({ message: "forbidden" });
-        } else {
-          console.log("club Manager detected10");
         }
 
         const eventId = req.params.id;
@@ -317,7 +293,6 @@ async function run() {
 
         res.json({ message: "event updated successfully", result });
       } catch (error) {
-        console.error(error);
         res.status(500).json({ message: "Server error" });
       }
     });
@@ -325,16 +300,12 @@ async function run() {
     app.delete("/events/:id", privatePath, async (req, res) => {
       try {
         const { email } = req.userInfoSet;
-        console.log(email);
 
         const result1 = await Collection1.findOne({ email: email });
         const role = result1.role;
-        console.log(role);
 
         if (role != "clubManager") {
           return res.status(403).json({ message: "forbidden" });
-        } else {
-          console.log("club Manager detected10");
         }
 
         const eventId = req.params.id;
@@ -345,23 +316,18 @@ async function run() {
 
         res.json({ message: "event deleted successfully", result });
       } catch (error) {
-        console.error(error);
         res.status(500).json({ message: "Server error" });
       }
     });
 
     app.get("/clubsAdminList", privatePath, async (req, res) => {
       const { email } = req.userInfoSet;
-      console.log(email);
 
       const result1 = await Collection1.findOne({ email: email });
       const role = result1.role;
-      console.log(role);
 
       if (role != "admin") {
         return res.status(403).json({ message: "forbidden" });
-      } else {
-        console.log("admin detected7");
       }
 
       const cursor = await Collection3.find({});
@@ -371,16 +337,12 @@ async function run() {
 
     app.get("/get-all-payments", privatePath, async (req, res) => {
       const { email } = req.userInfoSet;
-      console.log(email);
 
       const result1 = await Collection1.findOne({ email: email });
       const role = result1.role;
-      console.log(role);
 
       if (role != "admin") {
         return res.status(403).json({ message: "forbidden" });
-      } else {
-        console.log("admin detected5");
       }
 
       const cursor = await Collection5.find({});
@@ -395,7 +357,6 @@ async function run() {
         const email = req.params.email;
         const query = { userEmail: email };
         const values = await Collection5.find(query).toArray();
-        console.log(values);
         res.send(values);
       }
     );
@@ -411,16 +372,12 @@ async function run() {
     app.patch("/clubApprove/:id", privatePath, async (req, res) => {
       try {
         const { email } = req.userInfoSet;
-        console.log(email);
 
         const result1 = await Collection1.findOne({ email: email });
         const role = result1.role;
-        console.log(role);
 
         if (role != "admin") {
           return res.status(403).json({ message: "forbidden" });
-        } else {
-          console.log("admin detected3");
         }
 
         const id = req.params.id;
@@ -430,7 +387,6 @@ async function run() {
         const value = await Collection3.updateOne(query, updatedData);
         res.send(value);
       } catch (error) {
-        console.error(error);
         res.status(500).send({ message: "Failed to approve club" });
       }
     });
@@ -438,16 +394,12 @@ async function run() {
     app.patch("/clubReject/:id", privatePath, async (req, res) => {
       try {
         const { email } = req.userInfoSet;
-        console.log(email);
 
         const result1 = await Collection1.findOne({ email: email });
         const role = result1.role;
-        console.log(role);
 
         if (role != "admin") {
           return res.status(403).json({ message: "forbidden" });
-        } else {
-          console.log("admin detected4");
         }
 
         const id = req.params.id;
@@ -457,7 +409,6 @@ async function run() {
         const value = await Collection3.updateOne(query, updatedData);
         res.send(value);
       } catch (error) {
-        console.error(error);
         res.status(500).send({ message: "Failed to approve club" });
       }
     });
@@ -474,16 +425,12 @@ async function run() {
     app.get("/getClubs/:email", privatePath, async (req, res) => {
       try {
         const { email } = req.userInfoSet;
-        console.log(email);
 
         const result1 = await Collection1.findOne({ email: email });
         const role = result1.role;
-        console.log(role);
 
         if (role != "clubManager") {
           return res.status(403).json({ message: "forbidden" });
-        } else {
-          console.log("club Manager detected2");
         }
 
         const email1 = req.params.email;
@@ -493,7 +440,6 @@ async function run() {
         const values = await cursor.toArray();
         res.send(values);
       } catch (error) {
-        console.error(error);
         res.status(500).send({ message: "Failed to fetch clubs" });
       }
     });
@@ -501,16 +447,12 @@ async function run() {
     app.get("/getClubsApproved/:email", privatePath, async (req, res) => {
       try {
         const { email } = req.userInfoSet;
-        console.log(email);
 
         const result1 = await Collection1.findOne({ email: email });
         const role = result1.role;
-        console.log(role);
 
         if (role != "clubManager") {
           return res.status(403).json({ message: "forbidden" });
-        } else {
-          console.log("club Manager detected2");
         }
 
         const email1 = req.params.email;
@@ -520,7 +462,6 @@ async function run() {
         const values = await cursor.toArray();
         res.send(values);
       } catch (error) {
-        console.error(error);
         res.status(500).send({ message: "Failed to fetch clubs" });
       }
     });
@@ -528,16 +469,12 @@ async function run() {
     app.get("/getEvents/:email", privatePath, async (req, res) => {
       try {
         const { email } = req.userInfoSet;
-        console.log(email);
 
         const result1 = await Collection1.findOne({ email: email });
         const role = result1.role;
-        console.log(role);
 
         if (role != "clubManager") {
           return res.status(403).json({ message: "forbidden" });
-        } else {
-          console.log("club Manager detected6");
         }
 
         const email1 = req.params.email;
@@ -547,7 +484,6 @@ async function run() {
         const values = await cursor.toArray();
         res.send(values);
       } catch (error) {
-        console.error(error);
         res.status(500).send({ message: "Failed to fetch events" });
       }
     });
@@ -609,12 +545,6 @@ async function run() {
         });
 
         if (existing) {
-          console.log(
-            "Duplicate membership prevented for user:",
-            userEmail,
-            "club:",
-            clubId
-          );
           return res.send({ message: "User already a member of this club" });
         } else {
           const membership = {
@@ -637,12 +567,9 @@ async function run() {
 
           await Collection3.updateOne(clubQuery, { $set: updatedData });
 
-          console.log("Membership added for club:", clubId, "user:", userEmail);
-
           res.send({ success: true, inserted: result });
         }
       } catch (err) {
-        console.error(err);
         res.status(500).send({ success: false, error: err.message });
       }
     });
@@ -682,11 +609,8 @@ async function run() {
 
         await Collection3.updateOne(clubQuery, { $set: updatedData });
 
-        console.log("Free membership added:", clubId, userEmail);
-
         res.send({ success: true, inserted: result });
       } catch (err) {
-        console.error(err);
         res.status(500).send({ success: false, error: err.message });
       }
     });
@@ -700,7 +624,7 @@ async function run() {
 
           const cursor = Collection5.find({ userEmail: email, type: "club" });
           const result = (await cursor.toArray()).map((data) => data.clubId);
-          console.log(result);
+
           res.send(result);
         } catch (error) {
           res.status(500).send({ message: "Failed to fetch club memberships" });
@@ -751,7 +675,7 @@ async function run() {
 
           const cursor = Collection5.find({ userEmail: email, type: "event" });
           const result = (await cursor.toArray()).map((data) => data.eventId);
-          console.log(result);
+
           res.send(result);
         } catch (error) {
           res
@@ -773,12 +697,6 @@ async function run() {
         const existing = await Collection5.findOne({ userEmail, eventId });
 
         if (existing) {
-          console.log(
-            "Duplicate membership prevented for user:",
-            userEmail,
-            "event:",
-            eventId
-          );
           return res.send({ message: "User already joined this event" });
         } else {
           const membership = {
@@ -802,17 +720,9 @@ async function run() {
 
           await Collection4.updateOne(eventQuery, { $set: updatedData });
 
-          console.log(
-            "Membership added for event:",
-            eventId,
-            "user:",
-            userEmail
-          );
-
           res.send({ success: true, inserted: result });
         }
       } catch (err) {
-        console.error(err);
         res.status(500).send({ success: false, error: err.message });
       }
     });
@@ -853,11 +763,8 @@ async function run() {
 
         await Collection4.updateOne(eventQuery, { $set: updatedData });
 
-        console.log("Free membership added:", eventId, userEmail);
-
         res.send({ success: true, inserted: result });
       } catch (err) {
-        console.error(err);
         res.status(500).send({ success: false, error: err.message });
       }
     });
@@ -866,8 +773,6 @@ async function run() {
       try {
         const userEmail = req.body.email;
         const eventId = req.body.id;
-
-        console.log("Checking event membership:", userEmail, eventId);
 
         const query = {
           userEmail,
@@ -878,7 +783,6 @@ async function run() {
 
         res.send(result);
       } catch (err) {
-        console.error(err);
         res.status(500).send({ success: false, error: err.message });
       }
     });
@@ -887,8 +791,6 @@ async function run() {
       try {
         const userEmail = req.body.email;
         const clubId = req.body.id;
-
-        console.log(userEmail, clubId);
 
         const query = {
           userEmail,
@@ -900,7 +802,6 @@ async function run() {
 
         res.send(result);
       } catch (err) {
-        console.error(err);
         res.status(500).send({ success: false, error: err.message });
       }
     });
@@ -908,16 +809,12 @@ async function run() {
     app.get("/admin-dashboard-stats", privatePath, async (req, res) => {
       try {
         const { email } = req.userInfoSet;
-        console.log(email);
 
         const result1 = await Collection1.findOne({ email: email });
         const role = result1.role;
-        console.log(role);
 
         if (role != "admin") {
           return res.status(403).json({ message: "forbidden" });
-        } else {
-          console.log("admin detected");
         }
 
         const totalUsers = await Collection1.countDocuments();
@@ -962,9 +859,7 @@ async function run() {
           rejectedClubs,
           totalPaymentsAmount,
         });
-      } catch (error) {
-        console.error("Dashboard stats error:", error);
-      }
+      } catch (error) {}
     });
 
     app.get(
@@ -993,16 +888,12 @@ async function run() {
       async (req, res) => {
         try {
           const { email } = req.userInfoSet;
-          console.log(email);
 
           const result1 = await Collection1.findOne({ email: email });
           const role = result1.role;
-          console.log(role);
 
           if (role != "clubManager") {
             return res.status(403).json({ message: "forbidden" });
-          } else {
-            console.log("clubManager detected1");
           }
 
           const managerEmail = req.params.email;
@@ -1058,7 +949,6 @@ async function run() {
             totalPaymentsAmount,
           });
         } catch (error) {
-          console.error("Dashboard stats error:", error);
           res.status(500).send({ error: "Internal Server Error" });
         }
       }
@@ -1113,16 +1003,12 @@ async function run() {
       async (req, res) => {
         try {
           const { email } = req.userInfoSet;
-          console.log(email);
 
           const result1 = await Collection1.findOne({ email: email });
           const role = result1.role;
-          console.log(role);
 
           if (role != "clubManager") {
             return res.status(403).json({ message: "forbidden" });
-          } else {
-            console.log("club Manager detected5");
           }
 
           const managerEmail = req.params.email;
@@ -1153,10 +1039,7 @@ async function run() {
       }
     );
 
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
   } finally {
   }
 }
