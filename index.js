@@ -390,6 +390,18 @@ async function run() {
       res.send(values);
     });
 
+    app.get(
+      "/get-my-payments/:email",
+      privatePathSpecificUser,
+      async (req, res) => {
+        const email = req.params.email;
+        const query = { userEmail: email };
+        const values = await Collection5.find(query).toArray();
+        console.log(values);
+        res.send(values);
+      }
+    );
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
