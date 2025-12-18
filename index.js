@@ -538,8 +538,8 @@ async function run() {
           cost: paymentInfo.cost,
         },
 
-        success_url: `${process.env.SITE_DOMAIN}/dashboard/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.SITE_DOMAIN}/dashboard/payment-cancelled`,
+        success_url: `${process.env.SITE_DOMAIN}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.SITE_DOMAIN}/payment-cancelled`,
       });
 
       res.send({ url: session.url });
@@ -675,8 +675,8 @@ async function run() {
           clubId: paymentInfo.clubId,
         },
 
-        success_url: `${process.env.SITE_DOMAIN}/dashboard/payment-success-event?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.SITE_DOMAIN}/dashboard/payment-cancelled`,
+        success_url: `${process.env.SITE_DOMAIN}/payment-success-event?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.SITE_DOMAIN}/payment-cancelled`,
       });
 
       res.send({ url: session.url });
