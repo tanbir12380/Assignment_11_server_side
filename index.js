@@ -149,6 +149,25 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/clubs", privatePath, async (req, res) => {
+      const { email } = req.userInfoSet;
+      console.log(email);
+
+      const result1 = await Collection1.findOne({ email: email });
+      const role = result1.role;
+      console.log(role);
+
+      if (role != "clubManager") {
+        return res.status(403).json({ message: "forbidden" });
+      } else {
+        console.log("club Manager detected3");
+      }
+
+      const ourData = req.body;
+      const result = await Collection3.insertOne(ourData);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
