@@ -91,17 +91,17 @@ async function run() {
         const existingUser = await Collection1.findOne({
           email: userData.email,
         });
-
         if (existingUser) {
-          return res.send({ message: "User already exists" });
-        } else {
-          const result = await Collection1.insertOne(newUser);
-          res.send({
-            message: "User created successfully",
-            result,
+          return res.send({
+            message: "User already exists",
+            user: existingUser,
           });
         }
+
+        const result = await Collection1.insertOne(userData);
+        res.send({ message: "User created successfully", result });
       } catch (error) {
+        console.error(error);
         res.status(500).send({ message: "Internal server error" });
       }
     });
